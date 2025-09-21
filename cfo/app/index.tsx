@@ -1,15 +1,16 @@
-import { Text, View } from "react-native";
+import { ExpenseList } from "@/components/ExpenseList";
+import { ScrollView } from "react-native";
 
 export default function Index() {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
+    
+    <ScrollView
+      contentContainerStyle = {{
+        
+        marginTop: 20
       }}
     >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-    </View>
+       <ExpenseList/>
+    </ScrollView>
   );
 }
