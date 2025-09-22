@@ -1,65 +1,90 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { StyleSheet } from "react-native";
+import { DataTable } from "react-native-paper";
 
-type Item = {
+type ExpenseProp = {
     id?: number;
     description: string;
     amount: number;
     category: string;
     date: string;
 }
-    const data: Item[] = [
-        { id: 1, description: "Groceries", amount: 50, category: "Food", date: "2023-01-01" },
-        { id: 2, description: "Rent", amount: 1000, category: "Housing", date: "2023-01-01" },
-        { id: 3, description: "Utilities", amount: 200, category: "Housing", date: "2023-01-01" },
-    ];
+
 
 export const ExpenseList = () => {
+  const [page, setPage] = useState<number>(0);
+  const [numberOfItemsPerPageList] = useState([2, 3, 4]);
+  const [itemsPerPage, onItemPerPageChange] = useState(numberOfItemsPerPageList[0]);
 
-    const renderItem = ({ item }: { item: Item }) => (
-        <View style={styles.row}>
-      <Text style={[styles.cell, { flex: 2 }]}>{item.description}</Text>
-      <Text style={[styles.cell, { flex: 1 }]}>${item.amount}</Text>
-      <Text style={[styles.cell, { flex: 1 }]}>{item.category}</Text>
-      <Text style={[styles.cell, { flex: 1 }]}>{item.date}</Text>
-    </View>
-    )
+  const [data] = useState<ExpenseProp[]>([
+      { id: 1, description: "Groceries", amount: 50, category: "Food", date: "2023-01-01" },
+      { id: 2, description: "Rent", amount: 1000, category: "Housing", date: "2023-01-01" },
+      { id: 3, description: "Utilities", amount: 200, category: "Housing", date: "2023-01-01" },
+  ]);
 
-    return (
-        <View style={styles.container}>
-      {/* Header Row */}
-      <View style={[styles.row, styles.header]}>
-        <Text style={[styles.cell, { flex: 2 }]}>Description</Text>
-        <Text style={[styles.cell, { flex: 1 }]}>Amount</Text>
-        <Text style={[styles.cell, { flex: 1 }]}>Category</Text>
-        <Text style={[styles.cell, { flex: 1 }]}>Date</Text>
-      </View>
+  const from = page * itemsPerPage;
+  const to = Math.min((page+1)*itemsPerPage, data.length);
 
-      {/* Data Rows */}
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id !== undefined ? item.id.toString() : item.description}
+  useEffect(() => {
+    setPage(0);
+  }, [itemsPerPage]);
+  
+  const total = data.reduce((sum, item) => sum + item.amount, 0);
+
+  return (
+    <DataTable style={[styles.table]} >
+        <DataTable.Header style= {styles.columns}>
+          <DataTable.Title>Discription</DataTable.Title>
+          <DataTable.Title numeric style={{marginRight: '10%'}}>Amount</DataTable.Title>
+          <DataTable.Title>Category</DataTable.Title>
+          <DataTable.Title>Date</DataTable.Title>
+        </DataTable.Header>
+
+        {data.slice(from, to).map((item) => (
+          <DataTable.Row key={item.id} style={styles.rows}>
+            <DataTable.Cell>{item.description}</DataTable.Cell>
+            <DataTable.Cell numeric style={{marginRight: '10%'}}>{item.amount}</DataTable.Cell>
+            <DataTable.Cell>{item.category}</DataTable.Cell>
+            <DataTable.Cell>{item.date}</DataTable.Cell>
+          </DataTable.Row>
+        ))}
+        <DataTable.Row>
+          <DataTable.Cell>Total:</DataTable.Cell>
+          <DataTable.Cell numeric>{total}</DataTable.Cell>
+        </DataTable.Row>
+        <DataTable.Pagination
+        page={page}
+        numberOfPages={Math.ceil(data.length / itemsPerPage)}
+        onPageChange={(page) => setPage(page)}
+        label={`${from + 1}-${to} of ${data.length}`}
+        numberOfItemsPerPageList={numberOfItemsPerPageList}
+        numberOfItemsPerPage={itemsPerPage}
+        onItemsPerPageChange={onItemPerPageChange}
+        showFastPaginationControls
+        selectPageDropdownLabel={'Rows per page'}
       />
-    </View>
-    )
+    </DataTable>
+  )
+
 }
 
 const styles = StyleSheet.create({
-   container: {
-    padding: 10,
+  table: {
+    shadowColor: 'black',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    borderRadius: 20,
+    margin: 30,
+    backgroundColor: '#121212',
+    color: 'black', 
+    gap: 10,
+    justifyContent: 'space-between',
+
   },
-  row: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
-    paddingVertical: 8,
+  columns: {
+    justifyContent: 'space-between'
   },
-  header: {
-    backgroundColor: "#f2f2f2",
-    borderBottomWidth: 2,
-  },
-  cell: {
-    paddingHorizontal: 5,
-    textAlign: "center",
-  },
+  rows: {
+    justifyContent: 'space-between'
+  }
 })
