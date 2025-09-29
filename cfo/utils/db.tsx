@@ -1,22 +1,50 @@
-import * as sql from "expo-sqlite";
+import * as SQLite from "expo-sqlite";
 
-type ExpenseAttributes = {
-    id?: number;
-    description: string;
-    amount: number;
-    category: string;
-    date: string;
+export type ExpenseProps = {
+  id?: number;
+  description: string;
+  amount: number;
+  category: string;
+  date: string;
+};
+
+let db: SQLite.SQLiteDatabase;
+
+export async function initDB() {
+  db = await SQLite.openDatabaseAsync("expenses.db");
+
+  await db.execAsync(`
+    CREATE TABLE IF NOT EXISTS expenses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      description TEXT,
+      amount REAL,
+      category TEXT,
+      date TEXT
+    );
+  `);
 }
 
-const db = await sql.openDatabaseAsync('expenses.db')
+export async function addExpense(expense: ExpenseProps) {
+  const { description, amount, category, date } = expense;
+  try {
+    await db.runAsync(
+      `INSERT INTO expenses (description, amount, category, date) VALUES (?, ?, ?, ?);`,
+      [description, amount, category, date]
+    );
+  } catch (err) {
+    console.error("Error inserting expense:", err);
+  }
+}
 
-await db.execAsync(`
-    CREATE TABLE IF NOT EXISTS expenses (id INTEGER PRIMARY KEY AUTOINCREMENT, description TEXT, amount REAL, category TEXT, date TEXT);    
-`)
-
-export const addExpense = async (expense: ExpenseAttributes) => {
-    const { description, amount, category, date } = expense;
-    await db.execAsync(`
-        INSERT INTO expenses (description, amount, category, date) VALUES ('${description}', ${amount}, '${category}', '${date}');
-    `);
+export async function getExpenses() {
+    try {
+        const rows: ExpenseProps[] = await db.getAllAsync(
+            `SELECT * FROM expenses`
+        );
+        
+        return rows
+    } catch (err) {
+        console.error("Error fectching expenses", err);
+        return [];
+    }
 }

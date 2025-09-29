@@ -1,14 +1,8 @@
+import { ExpenseProps, getExpenses } from "@/utils/db";
 import { useEffect, useState } from "react";
 import { StyleSheet } from "react-native";
 import { DataTable } from "react-native-paper";
 
-type ExpenseProp = {
-    id?: number;
-    description: string;
-    amount: number;
-    category: string;
-    date: string;
-}
 
 
 export const ExpenseList = () => {
@@ -16,11 +10,22 @@ export const ExpenseList = () => {
   const [numberOfItemsPerPageList] = useState([2, 3, 4]);
   const [itemsPerPage, onItemPerPageChange] = useState(numberOfItemsPerPageList[0]);
 
-  const [data] = useState<ExpenseProp[]>([
-      { id: 1, description: "Groceries", amount: 50, category: "Food", date: "2023-01-01" },
-      { id: 2, description: "Rent", amount: 1000, category: "Housing", date: "2023-01-01" },
-      { id: 3, description: "Utilities", amount: 200, category: "Housing", date: "2023-01-01" },
-  ]);
+  const [data, setData] = useState<ExpenseProps[]>([]);
+
+
+
+  useEffect(() => {
+    const loadData = async () => {
+      try
+      {
+        const rows: ExpenseProps[] = await getExpenses();
+        setData(rows);
+      } catch (err) {
+        console.error("Error while setting expense data", err);
+      }
+    };
+    loadData();
+  })
 
   const from = page * itemsPerPage;
   const to = Math.min((page+1)*itemsPerPage, data.length);
@@ -40,14 +45,19 @@ export const ExpenseList = () => {
           <DataTable.Title>Date</DataTable.Title>
         </DataTable.Header>
 
-        {data.slice(from, to).map((item) => (
+        {data.length === 0 ? (
+          <DataTable.Row>
+            <DataTable.Cell>The tabel is empty</DataTable.Cell>
+          </DataTable.Row>
+        ) :(data.slice(from, to).map((item) => (
           <DataTable.Row key={item.id} style={styles.rows}>
             <DataTable.Cell>{item.description}</DataTable.Cell>
             <DataTable.Cell numeric style={{marginRight: '10%'}}>{item.amount}</DataTable.Cell>
             <DataTable.Cell>{item.category}</DataTable.Cell>
             <DataTable.Cell>{item.date}</DataTable.Cell>
           </DataTable.Row>
-        ))}
+        ))
+        )}
         <DataTable.Row>
           <DataTable.Cell>Total:</DataTable.Cell>
           <DataTable.Cell numeric>{total}</DataTable.Cell>
