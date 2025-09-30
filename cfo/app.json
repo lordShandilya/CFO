@@ -39,7 +39,14 @@
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow cfo to access your photos",
+          "cameraPermission": "Allow cfo to access your camera"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
